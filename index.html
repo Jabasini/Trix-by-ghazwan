@@ -11,18 +11,34 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         img { display: block; margin: 20px auto; width: 300px; }
+        #analysis { margin-top: 20px; font-size: 18px; }
+        .highlight { font-weight: bold; font-size: 24px; color: red; text-align: center; margin-top: 10px; }
+        #content-container { display: flex; gap: 20px; }
     </style>
 </head>
 <body>
 
 <h2>تسجيل نتائج التريكس النهائية</h2>
 
-<!-- عرض صورة ورق الشدة -->
-<img src="cards.jpg" alt="ورق شدة">
+<div id="content-container">
+    <!-- عرض صورة ورق الشدة -->
+    <img src="cards.jpg" alt="ورق شدة">
+
+    <!-- قسم التحليل -->
+    <div id="analysis">
+        <h3>تحليل النتائج</h3>
+        <p>إجمالي نتيجة أبو أمين: <span id="totalAmeen">0</span></p>
+        <p>إجمالي نتيجة أبو توفيق: <span id="totalToufic">0</span></p>
+        <p>التحليل الشهري:</p>
+        <ul id="monthlyAnalysis"></ul>
+    </div>
+</div>
+
+<div id="leadingTeam" class="highlight"></div>
 
 <form id="recordForm">
     <label for="date">التاريخ:</label>
-    <input type="date" id="date" required>
+    <input type="date" id="date" readonly required>
     
     <label for="name">اسم الشخص أو المجموعة:</label>
     <!-- القائمة المنسدلة -->
@@ -34,8 +50,11 @@
         <option value="ابو توفيق">ابو توفيق</option>
     </select>
     
-    <label for="score">نتيجة التريكس:</label>
-    <input type="number" id="score" required>
+    <label>نتيجة التريكس:</label>
+    <div style="display: flex; gap: 10px;">
+        <input type="number" id="scoreAmeen" placeholder="نتيجة أبو أمين" required>
+        <input type="number" id="scoreToufic" placeholder="نتيجة أبو توفيق" required>
+    </div>
     
     <label for="notes">ملاحظات:</label>
     <textarea id="notes"></textarea>
@@ -48,7 +67,8 @@
         <tr>
             <th>التاريخ</th>
             <th>الاسم</th>
-            <th>النتيجة</th>
+            <th>نتيجة فريق أبو أمين</th>
+            <th>نتيجة فريق أبو توفيق</th>
             <th>الملاحظات</th>
         </tr>
     </thead>
@@ -57,24 +77,79 @@
 </table>
 
 <script>
+    // تعيين التاريخ الحالي تلقائيًا عند تحميل الصفحة
+    window.onload = function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById("date").value = today;
+    };
+
+    // حساب النتائج الإجمالية وتحديث التحليل الشهري
+    let totalAmeen = 0;
+    let totalToufic = 0;
+    const monthlyResults = {};
+
     function addRecord() {
         const date = document.getElementById("date").value;
         const name = document.getElementById("name").value;
-        const score = document.getElementById("score").value;
+        const scoreAmeen = parseInt(document.getElementById("scoreAmeen").value) || 0;
+        const scoreToufic = parseInt(document.getElementById("scoreToufic").value) || 0;
         const notes = document.getElementById("notes").value;
 
-        if (date && name && score) {
+        if (date && name && (scoreAmeen || scoreToufic)) {
             const table = document.getElementById("recordsTable").getElementsByTagName("tbody")[0];
             const newRow = table.insertRow();
 
             newRow.insertCell(0).innerText = date;
             newRow.insertCell(1).innerText = name;
-            newRow.insertCell(2).innerText = score;
-            newRow.insertCell(3).innerText = notes;
+            newRow.insertCell(2).innerText = scoreAmeen;
+            newRow.insertCell(3).innerText = scoreToufic;
+            newRow.insertCell(4).innerText = notes;
+
+            // تحديث النتائج الإجمالية
+            totalAmeen += scoreAmeen;
+            totalToufic += scoreToufic;
+
+            document.getElementById("totalAmeen").innerText = totalAmeen;
+            document.getElementById("totalToufic").innerText = totalToufic;
+
+            // تحليل شهري
+            const month = date.slice(0, 7); // استخراج الشهر والسنة
+            if (!monthlyResults[month]) {
+                monthlyResults[month] = { ameen: 0, toufic: 0 };
+            }
+            monthlyResults[month].ameen += scoreAmeen;
+            monthlyResults[month].toufic += scoreToufic;
+
+            updateMonthlyAnalysis();
+            updateLeadingTeam();
 
             document.getElementById("recordForm").reset();
+            document.getElementById("date").value = date; // تعيين التاريخ الحالي مجددًا بعد إعادة ضبط النموذج
         } else {
             alert("يرجى ملء جميع الحقول المطلوبة.");
+        }
+    }
+
+    // تحديث التحليل الشهري
+    function updateMonthlyAnalysis() {
+        const monthlyAnalysis = document.getElementById("monthlyAnalysis");
+        monthlyAnalysis.innerHTML = "";
+        for (const [month, scores] of Object.entries(monthlyResults)) {
+            const li = document.createElement("li");
+            li.innerText = `${month}: نتيجة فريق أبو أمين = ${scores.ameen}, نتيجة فريق أبو توفيق = ${scores.toufic}`;
+            monthlyAnalysis.appendChild(li);
+        }
+    }
+
+    // تحديث الفريق المتقدم
+    function updateLeadingTeam() {
+        const leadingTeam = document.getElementById("leadingTeam");
+        if (totalAmeen > totalToufic) {
+            leadingTeam.innerText = "الفريق المتقدم:فريق أبو أمين";
+        } else if (totalToufic > totalAmeen) {
+            leadingTeam.innerText = "الفريق المتقدم:فريق أبو توفيق";
+        } else {
+            leadingTeam.innerText = "التعادل بين الفريقين";
         }
     }
 </script>
