@@ -7,21 +7,32 @@
     <style>
         body { font-family: Arial, sans-serif; direction: rtl; text-align: right; }
         form { margin-top: 20px; }
-        input, textarea, button { margin: 5px 0; padding: 10px; width: 100%; }
+        input, select, textarea, button { margin: 5px 0; padding: 10px; width: 100%; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        img { display: block; margin: 20px auto; width: 300px; }
     </style>
 </head>
 <body>
 
 <h2>تسجيل نتائج التريكس النهائية</h2>
 
+<!-- عرض صورة ورق الشدة -->
+<img src="cards.jpg" alt="ورق شدة">
+
 <form id="recordForm">
     <label for="date">التاريخ:</label>
     <input type="date" id="date" required>
     
     <label for="name">اسم الشخص أو المجموعة:</label>
-    <input type="text" id="name" required>
+    <!-- القائمة المنسدلة -->
+    <select id="name" required>
+        <option value="">اختر اسم المسجل</option>
+        <option value="ابو امين">ابو امين</option>
+        <option value="ابو مروان">ابو مروان</option>
+        <option value="ابو كرم">ابو كرم</option>
+        <option value="ابو توفيق">ابو توفيق</option>
+    </select>
     
     <label for="score">نتيجة التريكس:</label>
     <input type="number" id="score" required>
